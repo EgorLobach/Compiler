@@ -1,19 +1,21 @@
 main{
-print("prog5")
+print("prog6")
 element l = "9"
 element ty = "ty"
 set h = {l, ty}
-print(h)
+print(net)
 set var = {l, ty}
 print(var)
 if(h==var){
 print("equal")
+element el1 = "el1"
 }
 else {print("non equal")}
 if(h!=var){
 print("non equal")
 }
 else {print("equal")}
+h = h + el1
 }
 function qwerty(set f, element a){
 set b = f + a

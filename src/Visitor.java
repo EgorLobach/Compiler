@@ -24,15 +24,14 @@ public class Visitor extends SetGrammarBaseVisitor<String> {
                 errors.add("Cast error:  variable " + ctx.NAME().getText() + " is not set");
             }
         } else {
-            buffer += "Set ";
             variables.put(ctx.NAME().getText(), "set");
+            buffer += "Set ";
         }
         if (ctx.expression().functionCall() != null) {
             if (functions.get(ctx.expression().functionCall().NAME().getText()) != null)
                 if (!functions.get(ctx.expression().functionCall().NAME().getText()).equalsIgnoreCase("set"))
                     errors.add("Cast error: function " + ctx.expression().functionCall().NAME().getText() + " return not set");
         }
-        variables.put(ctx.NAME().getText(), "set");
         buffer += "" + ctx.NAME().getText() + " = " + visitExpression(ctx.expression()) + ";";
         return buffer;
     }
@@ -123,7 +122,7 @@ public class Visitor extends SetGrammarBaseVisitor<String> {
         else if (ctx.printSet() != null)
             return visitPrintSet(ctx.printSet());
         else if (ctx.functionCall() != null)
-            return visitFunctionCall(ctx.functionCall());
+            return visitFunctionCall(ctx.functionCall()) + ";";
         else if (ctx.whileBlock() != null)
             return visitWhileBlock(ctx.whileBlock());
         else if (ctx.ifBlock() != null)
@@ -149,7 +148,14 @@ public class Visitor extends SetGrammarBaseVisitor<String> {
 
     @Override
     public String visitSignatureFunction(SetGrammarParser.SignatureFunctionContext ctx) {
-        return ctx.getText();
+        String buffer = "(";
+        for (int i = 0; i<ctx.NAME().size();i++) {
+            buffer += visitType(ctx.type(i)) + " " + ctx.NAME(i).getText();
+            if(i!=ctx.NAME().size()-1)
+                buffer+=", ";
+        }
+        buffer+=")";
+        return buffer;
     }
 
     @Override
@@ -160,8 +166,10 @@ public class Visitor extends SetGrammarBaseVisitor<String> {
         else
             errors.add("Function name " + ctx.NAME().getText() + " already used");
         buffer += "\nprivate " + visitType(ctx.type()) + " " + ctx.NAME().getText();
-        if (ctx.signatureFunction() != null)
+        if (ctx.signatureFunction() != null) {
             buffer += visitSignatureFunction(ctx.signatureFunction()) + "throws Exception";
+            functionSignatures.put(ctx.NAME().getText(), ctx.signatureFunction());
+        }
         else buffer += "() throws Exception";
         variables.increase();
         if (ctx.signatureFunction() != null)
@@ -179,8 +187,10 @@ public class Visitor extends SetGrammarBaseVisitor<String> {
         else
             errors.add("Function name " + ctx.NAME().getText() + " already used");
         buffer += "private void " + ctx.NAME().getText();
-        if (ctx.signatureFunction() != null)
+        if (ctx.signatureFunction() != null) {
             buffer += visitSignatureFunction(ctx.signatureFunction()) + "throws Exception";
+            functionSignatures.put(ctx.NAME().getText(), ctx.signatureFunction());
+        }
         else buffer += "() throws Exception";
         variables.increase();
         for (int i = 0; i < ctx.signatureFunction().type().size(); i++)
@@ -251,7 +261,7 @@ public class Visitor extends SetGrammarBaseVisitor<String> {
     @Override
     public String visitCompare(SetGrammarParser.CompareContext ctx) {
         String buffer = "";
-        buffer += visitSizeExpression(ctx.sizeExpression(0)) + ctx.getChild(1).getText() + visitSizeExpression(ctx.sizeExpression(0));
+        buffer += visitSizeExpression(ctx.sizeExpression(0)) + ctx.getChild(1).getText() + visitSizeExpression(ctx.sizeExpression(1));
         return buffer;
     }
 
@@ -306,8 +316,8 @@ public class Visitor extends SetGrammarBaseVisitor<String> {
                 errors.add("Cast error:  variable " + ctx.NAME().getText() + " is not element");
             }
         } else {
-            buffer += "Element ";
             variables.put(ctx.NAME().getText(), "element");
+            buffer += "Element ";
         }
         if (ctx.LINE() != null)
             buffer += "" + ctx.NAME().getText() + " = new Element(" + ctx.LINE().getText() + ");";
@@ -319,7 +329,6 @@ public class Visitor extends SetGrammarBaseVisitor<String> {
         }
         if (ctx.getExpression() != null)
             buffer += "" + ctx.NAME().getText() + " = " + visitGetExpression(ctx.getExpression()) + ";";
-        variables.put(ctx.NAME().getText(), "element");
         return buffer;
     }
 
@@ -347,7 +356,7 @@ public class Visitor extends SetGrammarBaseVisitor<String> {
     boolean checkSignatures(SetGrammarParser.InputSignatureContext in, SetGrammarParser.SignatureFunctionContext sig) {
         boolean check = true;
         if (sig == null && in == null)
-            return true;
+           return true;
         if (sig == null || in == null)
             return false;
         if (in.NAME().size() == sig.NAME().size()) {
@@ -372,75 +381,86 @@ public class Visitor extends SetGrammarBaseVisitor<String> {
             "        }\n" +
             "    }\n" +
             "    private void start() throws Exception\n";
-    String utils = "private Set plus(Set a, Set b){\n" +
+    String utils = "private Set plus(Set a, Set b) {\n" +
             "        Set c = new Set(a.getSet());\n" +
-            "        for (Element element: b.getSet())\n" +
+            "        for (Element element : b.getSet())\n" +
             "            c.add(element);\n" +
             "        return c;\n" +
             "    }\n" +
-            "    private Set plus(Set a, Element b){\n" +
-            "        Set c = new Set(a.getSet());\n" +
-            "            c.add(b);\n" +
-            "        return c;\n" +
-            "    }\n" +
-            "    private Set plus(Element b, Set a){\n" +
+            "\n" +
+            "    private Set plus(Set a, Element b) {\n" +
             "        Set c = new Set(a.getSet());\n" +
             "        c.add(b);\n" +
             "        return c;\n" +
             "    }\n" +
-            "    private Set minus(Set a, Set b){\n" +
+            "\n" +
+            "    private Set plus(Element b, Set a) {\n" +
             "        Set c = new Set(a.getSet());\n" +
-            "        for (Element element: b.getSet())\n" +
+            "        c.add(b);\n" +
+            "        return c;\n" +
+            "    }\n" +
+            "\n" +
+            "    private Set minus(Set a, Set b) {\n" +
+            "        Set c = new Set(a.getSet());\n" +
+            "        for (Element element : b.getSet())\n" +
             "            c.remove(element);\n" +
             "        return c;\n" +
             "    }\n" +
-            "    private Set minus(Set a, Element b){\n" +
+            "\n" +
+            "    private Set minus(Set a, Element b) {\n" +
             "        Set c = new Set(a.getSet());\n" +
             "        c.remove(b);\n" +
             "        return c;\n" +
             "    }\n" +
-            "    private Set multiply(Set a, Set b){\n" +
+            "\n" +
+            "    private Set multiply(Set a, Set b) {\n" +
             "        Set c = new Set();\n" +
-            "        for(Element element: a.getSet())\n" +
-            "            if(b.indexOf(element))\n" +
+            "        for (Element element : a.getSet())\n" +
+            "            if (b.indexOf(element))\n" +
             "                c.add(element);\n" +
             "        return c;\n" +
             "    }\n" +
-            "    private Set multiply(Set a, Element b){\n" +
+            "\n" +
+            "    private Set multiply(Set a, Element b) {\n" +
             "        Set c = new Set();\n" +
-            "        if(a.indexOf(b))\n" +
-            "                c.add(b);\n" +
+            "        if (a.indexOf(b))\n" +
+            "            c.add(b);\n" +
             "        return c;\n" +
             "    }\n" +
-            "    private Set multiply(Element a, Set b){\n" +
+            "\n" +
+            "    private Set multiply(Element a, Set b) {\n" +
             "        Set c = new Set();\n" +
-            "        if(b.indexOf(a))\n" +
+            "        if (b.indexOf(a))\n" +
             "            c.add(a);\n" +
             "        return c;\n" +
             "    }\n" +
-            "    private Set divide(Set a, Set b){\n" +
+            "\n" +
+            "    private Set divide(Set a, Set b) {\n" +
             "        Set c = new Set();\n" +
             "        c.add(minus(a, b));\n" +
             "        c.add(minus(b, a));\n" +
             "        return c;\n" +
             "    }\n" +
-            "    private boolean nonEqual(Set a, Set b){\n" +
-            "        for (Element element: a.getSet())\n" +
-            "            if(b.indexOf(element))\n" +
-            "                return true;\n" +
-            "        return false;\n" +
-            "    }\n" +
-            "    private boolean nonEqual(Element a, Element b){\n" +
-            "        return !a.getElement().equals(b.getElement());\n" +
-            "    }\n" +
-            "    \n" +
-            "    private boolean equal(Set a, Set b){\n" +
-            "        for (Element element: a.getSet())\n" +
-            "            if(b.indexOf(element))\n" +
+            "\n" +
+            "    private boolean nonEqual(Set a, Set b) {\n" +
+            "        for (Element element : a.getSet())\n" +
+            "            if (b.indexOf(element))\n" +
             "                return false;\n" +
             "        return true;\n" +
             "    }\n" +
-            "    private boolean equal(Element a, Element b){\n" +
+            "\n" +
+            "    private boolean nonEqual(Element a, Element b) {\n" +
+            "        return !a.getElement().equals(b.getElement());\n" +
+            "    }\n" +
+            "\n" +
+            "    private boolean equal(Set a, Set b) {\n" +
+            "        for (Element element : a.getSet())\n" +
+            "            if (!b.indexOf(element))\n" +
+            "                return false;\n" +
+            "        return true;\n" +
+            "    }\n" +
+            "\n" +
+            "    private boolean equal(Element a, Element b) {\n" +
             "        return a.getElement().equals(b.getElement());\n" +
             "    }";
     String setClass = "public class Set {\n" +
@@ -487,6 +507,14 @@ public class Visitor extends SetGrammarBaseVisitor<String> {
             "        for(Element element: getSet())\n" +
             "            buffer+=element.toString() + \" \";\n" +
             "        return buffer;\n" +
+            "    }\n" +
+            "\n" +
+            "    public int size() {\n" +
+            "        return set.size();\n" +
+            "    }\n" +
+            "\n" +
+            "    public Element get(int i) {\n" +
+            "        return set.get(i);\n" +
             "    }\n" +
             "}";
 

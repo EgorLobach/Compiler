@@ -1,7 +1,8 @@
 main{
-print("helloEgor")
+print("prog2")
 element l = "9"
-set h = {l}
+element k = "hj"
+set h = {l, k}
 print(h)
 element a = qwerty()
 print(a)

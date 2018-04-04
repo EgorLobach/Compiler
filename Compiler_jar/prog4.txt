@@ -1,6 +1,21 @@
 main{
-print("helloEgor")
-element l = "9"
-set h = {l}
-print(h)
+print("prog4")
+element a = "a"
+element b = "b"
+element c = "c"
+element d = "d"
+element e = "e"
+set set1 = {a, c, d}
+set set2 = {a, b, c, d, e}
+print(set1)
+print(set2)
+while(set1.size()<set2.size()){
+    element temp = is(set2)
+    set2 = set2 - temp
+    print(set2)
+}
+}
+function element is(set a){
+    element temp = a.get(0)
+    return temp
 }

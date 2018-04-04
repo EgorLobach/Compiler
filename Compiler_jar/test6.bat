@@ -1,4 +1,4 @@
-start Compiler.jar  prog5.txt
+start Compiler.jar  prog6.txt
 timeout /t 2
 "C:\Program Files\Java\jdk1.8.0_121\bin\javac.exe" Program.java
 @echo on 

@@ -1,6 +1,26 @@
 main{
-print("helloEgor")
-element l = "9"
-set h = {l}
-print(h)
+print("prog3")
+element l = "l"
+element k = "k"
+element g = "g"
+set ree = {l, k}
+print(ree)
+if(ree.indexOf(l)){
+ree=ree-l
+}
+if(ree.indexOf(g)){
+ree=ree-g
+}
+else {
+ree=ree+g
+}
+print(ree)
+element p = "p"
+element ty = "ty"
+qwerty(ree, ty)
+qwerty(ree, p)
+}
+function qwerty(set f, element a){
+set b = f + a
+print(b)
 }

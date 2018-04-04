@@ -21,7 +21,7 @@ public class Set {
     }
 
     public void add(Element element) {
-        if (set.indexOf(element) != -1)
+        if (set.indexOf(element) == -1)
             set.add(element);
     }
 
@@ -46,7 +46,15 @@ public class Set {
     public String toString() {
         String buffer = "";
         for(Element element: getSet())
-            buffer+=element.toString();
+            buffer+=element.toString()+ " ";
         return buffer;
+    }
+
+    public int size() {
+        return set.size();
+    }
+
+    public Element get(int i) {
+        return set.get(i);
     }
 }
