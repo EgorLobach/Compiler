@@ -11,8 +11,9 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) {
         try {
-            String currentDir = System.getProperty("user.dir");
-            ANTLRInputStream input = new ANTLRFileStream(currentDir + "\\prog1.txt");
+            //String currentDir = System.getProperty("user.dir");
+            //ANTLRInputStream input = new ANTLRFileStream(currentDir + "\\prog2.txt");
+            ANTLRInputStream input = new ANTLRFileStream(args[0]);
             SetGrammarLexer lexer = new SetGrammarLexer(input);
             SetGrammarParser parser = new SetGrammarParser(new CommonTokenStream(lexer));
             ParseTree tree = parser.program();

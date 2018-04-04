@@ -1,0 +1,14 @@
+main{
+print("helloEgor")
+element l = "9"
+set h = {l}
+print(h)
+element a = qwerty()
+print(a)
+h=h+a
+print(h)
+}
+function element qwerty(){
+element a = "df"
+return a
+}

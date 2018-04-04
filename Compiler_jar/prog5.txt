@@ -1,0 +1,6 @@
+main{
+print("helloEgor")
+element l = "9"
+set h = {l}
+print(h)
+}
